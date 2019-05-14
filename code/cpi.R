@@ -8,6 +8,7 @@ cpi_codes <- c("CUSR0000SA0",
                "CUUR0000SA0",
                "CUSR0000SA0L1E",
                "CUUR0000SA0L1E")
+current_year <- 2019
 
 payload1 <- list('seriesid'=cpi_codes, 
                  'startyear'='2000', 
@@ -15,6 +16,10 @@ payload1 <- list('seriesid'=cpi_codes,
                  'registrationkey'=Sys.getenv("BLS_REG_KEY"))
 df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
 
+#monthly cpi includes CPI U (SA, NSA) and CPI U CORE (SA, NSA)
+
+#add cpiurs from bls excel file. 
+#  calculate months that don't yet exist (only update once per year) apply change from CPI
 cpi_monthly <- df1 %>% 
   mutate(month = as.numeric(substr(period,2,3)),
          value = as.numeric(value),
@@ -27,19 +32,13 @@ cpi_monthly <- df1 %>%
          cpi_u_nsa = CUUR0000SA0,
          cpi_u_core = CUSR0000SA0L1E,
          cpi_u_core_nsa = CUUR0000SA0L1E)
+
+write_csv(cpi_monthly, here("output/cpi_monthly.csv"))
+
+cpi_annual <- cpi_monthly %>% 
+  filter(year != current_year) %>% 
+  group_by(year) %>% 
+  summarise(cpi_u = mean(cpi_u_nsa),
+            cpi_u_core = mean(cpi_u_core_nsa))
+
   
-  
-  
-  
-
-
-
-
-#figure out how to parse CPI-U-RS data from https://www.bls.gov/cpi/research-series/home.htm
-
-#may not be necessary to download all of the data. 
-system(paste0('wget -N --progress=bar:force --header="Accept-Encoding: gzip" ',"https://download.bls.gov/pub/time.series/cu/cu.series", " -P data/"))
-system(paste0('wget -N --progress=bar:force --header="Accept-Encoding: gzip" ',"https://download.bls.gov/pub/time.series/cu/cu.data.0.Current", " -P data/"))
-
-cu_series <- fread("data/cu.series")
-cu_data <- fread("data/cu.data.0.Current")
