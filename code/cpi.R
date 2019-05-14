@@ -1,5 +1,6 @@
 #Update monthly CPI
 library(tidyverse)
+library(readxl)
 library(data.table)
 library(blsAPI)
 library(here)
@@ -10,17 +11,52 @@ cpi_codes <- c("CUSR0000SA0",
                "CUUR0000SA0L1E")
 current_year <- 2019
 
-payload1 <- list('seriesid'=cpi_codes, 
-                 'startyear'='2000', 
-                 'endyear'='2019',
-                 'registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload1 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload2 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload3 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
+payload4 <- list('seriesid'=cpi_codes, 'startyear'='1940', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY")) #arbitrary year to start at
+
+
 df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
+df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
+df3 <- blsAPI(payload3, api_version = 2, return_data_frame = TRUE)
+df4 <- blsAPI(payload4, api_version = 2, return_data_frame = TRUE)
+
+api_output <- bind_rows(df1, df2, df3, df4)
+
+#add cpiurs from bls excel file. 
+download.file("https://www.bls.gov/cpi/research-series/allitems.xlsx", here("data/allitems.xlsx"))
+
+#create crosswalk for months
+month_xwalk <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12, NA), 
+                          period = c("JAN","FEB","MAR","APR","MAY","JUNE","JULY","AUG","SEP","OCT","NOV","DEC","AVG"))
+
+cpiurs <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_SA", skip = 6) %>% 
+  pivot_longer(cols = -YEAR, 
+               names_to = "period", 
+               values_to = "cpiurs") %>% 
+  left_join(month_xwalk, by = "period") %>% 
+  filter(period != "AVG",
+         !is.na(cpiurs)) %>% 
+  rename(year = YEAR) %>% 
+  select(year,month,cpiurs)
+
+cpiurs_nsa <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_NSA", skip = 6) %>% 
+  pivot_longer(cols = -YEAR, 
+               names_to = "period", 
+               values_to = "cpiurs_nsa") %>% 
+  left_join(month_xwalk, by = "period") %>% 
+  filter(period != "AVG",
+         !is.na(cpiurs_nsa)) %>% 
+  rename(year = YEAR) %>% 
+  select(year,month,cpiurs_nsa)
+
+
 
 #monthly cpi includes CPI U (SA, NSA) and CPI U CORE (SA, NSA)
 
-#add cpiurs from bls excel file. 
 #  calculate months that don't yet exist (only update once per year) apply change from CPI
-cpi_monthly <- df1 %>% 
+cpi_monthly <- api_output %>% 
   mutate(month = as.numeric(substr(period,2,3)),
          value = as.numeric(value),
          year = as.numeric(year)) %>% 
@@ -31,7 +67,9 @@ cpi_monthly <- df1 %>%
   rename(cpi_u = CUSR0000SA0,
          cpi_u_nsa = CUUR0000SA0,
          cpi_u_core = CUSR0000SA0L1E,
-         cpi_u_core_nsa = CUUR0000SA0L1E)
+         cpi_u_core_nsa = CUUR0000SA0L1E) %>% 
+  left_join(cpiurs, by = c("year", "month")) %>% 
+  case_when()
 
 write_csv(cpi_monthly, here("output/cpi_monthly.csv"))
 
@@ -41,4 +79,5 @@ cpi_annual <- cpi_monthly %>%
   summarise(cpi_u = mean(cpi_u_nsa),
             cpi_u_core = mean(cpi_u_core_nsa))
 
-  
+write_csv(cpi_annual, here("output/cpi_annual.csv"))
+
