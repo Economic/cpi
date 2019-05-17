@@ -3,7 +3,7 @@ Stata package with monthly data for various CPI series
 
 ## Installation
 ```stata
-net install state_geocodes, from("example_url")
+net install cpi, from("example_url")
 ```
 
 ## Basic Use
