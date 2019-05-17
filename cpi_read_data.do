@@ -15,7 +15,7 @@ lab var cpiurs_nsa "CPI-U-RS, All items (not seasonally adjusted)"
 lab var cpiurs_core "CPI-U-RS, All items less food and energy (seasonally adjusted)"
 lab var cpiurs_core_nsa "CPI-U-RS, All items less food and energy (not seasonally adjusted)"
 
-save cpi_monthly.dta, replace
+saveold cpi_monthly.dta, version(13) replace
 
 *read in cpi data, annual data
 import delim ${output}cpi_annual.csv, clear
@@ -25,4 +25,4 @@ lab var cpi_u_core "All items less food and energy in U.S. city average"
 lab var cpiurs "CPI-U-RS, All items"
 lab var cpiurs_core "CPI-U-RS, All items less food and energy"
 
-save cpi_annual.dta, replace
+saveold cpi_annual.dta, version(13) replace
