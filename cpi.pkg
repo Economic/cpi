@@ -1,3 +1,16 @@
 v 3
-d Economic Policy Institute
-p cpi
+
+d state_geocodes: use state geocodes
+d
+d Author: Economic Policy Institute
+d Support: https://github.com/Economic/cpi
+d
+d This package allows users access various CPI series using sysuse in Stata
+d
+d Distribution-Date: 20190518
+d
+
+F cpi_read_data.do
+F cpi.sthlp
+F cpi_monthly.dta
+F cpi_annual.dta

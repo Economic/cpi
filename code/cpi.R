@@ -116,3 +116,4 @@ cpi_annual <- cpi_monthly %>%
 write_csv(cpi_annual, here("output/cpi_annual.csv"))
 
 
+
