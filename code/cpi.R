@@ -30,8 +30,8 @@ df4 <- blsAPI(payload4, api_version = 2, return_data_frame = TRUE)
 api_output <- bind_rows(df1, df2, df3, df4)
 
 #download cpiurs excel file files
-download.file("https://www.bls.gov/cpi/research-series/allitems.xlsx", here("data/allitems.xlsx"))
-download.file("https://www.bls.gov/cpi/research-series/alllessfe.xlsx", here("data/alllessfe.xlsx"))
+system(paste0("wget -N https://www.bls.gov/cpi/research-series/allitems.xlsx -P", here("data/")))
+system(paste0("wget -N https://www.bls.gov/cpi/research-series/alllessfe.xlsx -P", here("data/")))
 
 
 #Clean data for output ####
