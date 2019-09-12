@@ -1,5 +1,5 @@
 # Consumer Price Index stata package
-Stata package with monthly data for various CPI series
+Stata package with monthly and annual data for various CPI series
 
 ## Installation
 ```stata
