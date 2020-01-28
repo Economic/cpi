@@ -2,6 +2,7 @@
 *set working directory to root cpi directory
 
 global output output/
+global data data/
 
 *read in cpi data, monthly data
 import delim ${output}cpi_monthly.csv, clear
@@ -50,4 +51,21 @@ replace cpiurs = "." if cpiurs == "NA"
 replace cpiurs_core = "." if cpiurs_core == "NA"
 
 destring cpi*, replace
+
+tempfile cpi_ann
+save `cpi_ann'
+
+*apply changes from CPI-U-X1 to CPI-U-RS to extend back from 1978 to 1947
+import delim ${data}cpi_u_x1.csv, clear
+merge 1:1 year using `cpi_ann'
+drop if _merge == 1
+drop _merge
+
+tsset year
+while cpiurs == . & year == 1947{
+    replace cpiurs = f1.cpiurs * (cpi_u_x1 / f1.cpi_u_x1) if year <= 1977
+}
+
+replace cpiurs = round(cpiurs, .1)
+
 saveold cpi_annual.dta, version(13) replace
