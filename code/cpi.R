@@ -12,22 +12,24 @@ cpi_codes <- c("CUSR0000SA0",
                "CUSR0000SA0L1E",
                "CUUR0000SA0L1E")
 #year
-current_year <- 2019
+current_year <- 2020
 
 #BLS API payloads
-payload1 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"))
-payload2 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"))
-payload3 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
-payload4 <- list('seriesid'=cpi_codes, 'startyear'='1947', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
+payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'='2020','registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload2 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload3 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload4 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
+payload5 <- list('seriesid'=cpi_codes, 'startyear'='1947', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
 
 #Get bls data ####
 df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
 df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
 df3 <- blsAPI(payload3, api_version = 2, return_data_frame = TRUE)
 df4 <- blsAPI(payload4, api_version = 2, return_data_frame = TRUE)
+df5 <- blsAPI(payload5, api_version = 2, return_data_frame = TRUE)
 
 #append all 20 year periods together
-api_output <- bind_rows(df1, df2, df3, df4)
+api_output <- bind_rows(df1, df2, df3, df4, df5)
 
 #download cpiurs excel file files
 system(paste0("wget -N https://www.bls.gov/cpi/research-series/allitems.xlsx -P", here("data/")))
@@ -114,6 +116,3 @@ cpi_annual <- cpi_monthly %>%
   left_join(cpiurs_ann, by = "year")
 
 write_csv(cpi_annual, here("output/cpi_annual.csv"))
-
-
-

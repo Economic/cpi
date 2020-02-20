@@ -67,5 +67,6 @@ while cpiurs == . & year == 1947{
 }
 
 replace cpiurs = round(cpiurs, .1)
+drop cpi_u_x1
 
 saveold cpi_annual.dta, version(13) replace
