@@ -3,7 +3,7 @@ Stata package with monthly and annual data for various CPI series
 
 ## Installation
 ```stata
-net install cpi, from("example_url")
+net install cpi, from("https://github.com/Economic/cpi")
 ```
 
 ## Basic Use
