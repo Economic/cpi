@@ -13,29 +13,28 @@ wb_df_monthly_backward <- cpi_monthly %>%
   mutate(cpiurs_nsa = accumulate(cpi_u_x1_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs = cpiurs_nsa*cpi_u/cpi_u_nsa) %>% 
   select(-cpi_u_x1, -cpi_u_x1_gr) %>% 
+  filter(date < "1977-12-01") %>% 
   arrange(date)
 
 wb_df_monthly_forward <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date)) %>% 
-  mutate(cpi_u_gr = cpi_u/lag(cpi_u, 1),
-         cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
-         cpi_u_core_gr = cpi_u_core/lag(cpi_u_core, 1),
+  mutate(cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
          cpi_u_core_nsa_gr = cpi_u_core_nsa/lag(cpi_u_core_nsa, 1)) %>% 
   filter(date >= "2019-12-01") %>% 
-  mutate(cpiurs = accumulate(cpi_u_gr[2:n()], function(x, y) x*y, .init = cpiurs[1]),
-         cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
-         cpiurs_core = accumulate(cpi_u_core_gr[2:n()], function(x, y) x*y, .init = cpiurs_core[1]),
+  mutate(cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs_core_nsa = accumulate(cpi_u_core_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_core_nsa[1])) %>% 
   select(date, cpi_u, cpi_u_nsa, cpi_u_core, cpi_u_core_nsa, cpiurs, cpiurs_nsa, 
-         cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa)
+         cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa) %>% 
+  mutate(cpiurs = cpiurs_nsa*cpi_u/cpi_u_nsa,
+         cpiurs_core = cpiurs_core_nsa*cpi_u_core/cpi_u_core_nsa)
 
 wb_df_monthly <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date)) %>% 
   select(date, cpi_u, cpi_u_nsa, cpi_u_core, cpi_u_core_nsa, cpiurs, cpiurs_nsa, 
          cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa) %>% 
-  filter(date < "2019-12-01" & date > "1977-12-01") %>% 
+  filter(date < "2019-12-01" & date >= "1977-12-01") %>% 
   rbind(., wb_df_monthly_backward, wb_df_monthly_forward) %>%
   arrange(date) %>% 
   mutate(cpi_u_mom_sa_unit = cpi_u - lag(cpi_u, 1),
@@ -68,29 +67,27 @@ wb_df_monthly <- cpi_monthly %>%
 wb_df_quarterly_forward <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date)) %>% 
-  mutate(cpi_u_gr = cpi_u/lag(cpi_u, 1),
-         cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
-         cpi_u_core_gr = cpi_u_core/lag(cpi_u_core, 1),
+  mutate(cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
          cpi_u_core_nsa_gr = cpi_u_core_nsa/lag(cpi_u_core_nsa, 1)) %>% 
   filter(date >= "2019-12-01") %>% 
-  mutate(cpiurs = accumulate(cpi_u_gr[2:n()], function(x, y) x*y, .init = cpiurs[1]),
-         cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
-         cpiurs_core = accumulate(cpi_u_core_gr[2:n()], function(x, y) x*y, .init = cpiurs_core[1]),
+  mutate(cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs_core_nsa = accumulate(cpi_u_core_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_core_nsa[1])) %>% 
   select(date, cpi_u, cpi_u_nsa, cpi_u_core, cpi_u_core_nsa, cpiurs, cpiurs_nsa, 
          cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa) %>% 
+  mutate(cpiurs = cpiurs_nsa*cpi_u/cpi_u_nsa,
+         cpiurs_core = cpiurs_core_nsa*cpi_u_core/cpi_u_core_nsa) %>% 
   mutate(quarter = as.yearqtr(date)) %>% 
   group_by(quarter) %>% 
-  summarise(cpi_u = round(mean(cpi_u), 1),
-            cpi_u_nsa = round(mean(cpi_u_nsa), 1),
-            cpi_u_core = round(mean(cpi_u_core), 1),
-            cpi_u_core_nsa = round(mean(cpi_u_core_nsa), 1),
-            cpiurs = round(mean(cpiurs), 1),
-            cpiurs_nsa = round(mean(cpiurs_nsa), 1),
-            cpiurs_core = round(mean(cpiurs_core), 1),
-            cpiurs_core_nsa = round(mean(cpiurs_core_nsa), 1),
-            cpi_u_medcare = round(mean(cpi_u_medcare), 1),
-            cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 1)) %>% 
+  summarise(cpi_u = round(mean(cpi_u), 3),
+            cpi_u_nsa = round(mean(cpi_u_nsa), 3),
+            cpi_u_core = round(mean(cpi_u_core), 3),
+            cpi_u_core_nsa = round(mean(cpi_u_core_nsa), 3),
+            cpiurs = round(mean(cpiurs), 3),
+            cpiurs_nsa = round(mean(cpiurs_nsa), 3),
+            cpiurs_core = round(mean(cpiurs_core), 3),
+            cpiurs_core_nsa = round(mean(cpiurs_core_nsa), 3),
+            cpi_u_medcare = round(mean(cpi_u_medcare), 3),
+            cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 3)) %>% 
   filter(quarter > "2019 Q4")
 
 wb_df_quarterly <- wb_df_quarterly_forward <- cpi_monthly %>% 
@@ -98,16 +95,16 @@ wb_df_quarterly <- wb_df_quarterly_forward <- cpi_monthly %>%
          date = as.Date(date),
          quarter = as.yearqtr(date)) %>% 
   group_by(quarter) %>% 
-  summarise(cpi_u = round(mean(cpi_u), 1),
-            cpi_u_nsa = round(mean(cpi_u_nsa), 1),
-            cpi_u_core = round(mean(cpi_u_core), 1),
-            cpi_u_core_nsa = round(mean(cpi_u_core_nsa), 1),
-            cpiurs = round(mean(cpiurs), 1),
-            cpiurs_nsa = round(mean(cpiurs_nsa), 1),
-            cpiurs_core = round(mean(cpiurs_core), 1),
-            cpiurs_core_nsa = round(mean(cpiurs_core_nsa), 1),
-            cpi_u_medcare = round(mean(cpi_u_medcare), 1),
-            cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 1)) %>% 
+  summarise(cpi_u = round(mean(cpi_u), 3),
+            cpi_u_nsa = round(mean(cpi_u_nsa), 3),
+            cpi_u_core = round(mean(cpi_u_core), 3),
+            cpi_u_core_nsa = round(mean(cpi_u_core_nsa), 3),
+            cpiurs = round(mean(cpiurs), 3),
+            cpiurs_nsa = round(mean(cpiurs_nsa), 3),
+            cpiurs_core = round(mean(cpiurs_core), 3),
+            cpiurs_core_nsa = round(mean(cpiurs_core_nsa), 3),
+            cpi_u_medcare = round(mean(cpi_u_medcare), 3),
+            cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 3)) %>% 
   filter(quarter <= "2019 Q4") %>% 
   bind_rows(., wb_df_quarterly_forward)
 

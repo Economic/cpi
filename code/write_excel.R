@@ -265,7 +265,7 @@ writeData(wb, x = "NIPA 2.3.4 (line 1)", sheet = "Alt Indices", startRow = 3, st
 writeData(wb, x = "Marekt-Based Personal Consumption Expenditure", sheet = "Alt Indices", startRow = 1, startCol = 4)
 addStyle(wb, sheet = "Alt Indices", style = createStyle(wrapText = TRUE, halign = "center", valign = "center", textDecoration = "bold"), rows = 1, cols = 4)
 
-writeData(wb, x = "2009=100", sheet = "Alt Indices", startRow = 2, startCol = 4)
+writeData(wb, x = "2012=100", sheet = "Alt Indices", startRow = 2, startCol = 4)
 writeData(wb, x = "NIPA 2.3.4 (line 27)", sheet = "Alt Indices", startRow = 3, startCol = 4)
 
 freezePane(wb, sheet = "Alt Indices", firstActiveRow = 4, firstActiveCol = 2)
