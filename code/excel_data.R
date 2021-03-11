@@ -1,18 +1,21 @@
-cpi_u_x1 <- read_csv(here("data/cpi_u_x1.csv")) %>% 
+cpi_u_x1_monthly <- read_csv(here("data/cpi_u_x1_monthly.csv")) %>% 
   mutate(date = as.Date(date))
+
+cpi_u_x1_ann <- read_csv(here("data/cpi_u_x1_annual.csv"))
 
 wb_df_monthly_backward <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date)) %>% 
   select(date, cpi_u, cpi_u_nsa, cpi_u_core, cpi_u_core_nsa, cpiurs, cpiurs_nsa, 
          cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa) %>% 
-  left_join(cpi_u_x1, by = "date") %>% 
-  mutate(cpi_u_x1_gr = lag(cpi_u_x1, 1)/cpi_u_x1) %>% 
+  left_join(cpi_u_x1_monthly, by = "date") %>% 
+  arrange(date) %>% 
+  mutate(cpi_u_x1_monthly_gr = cpi_u_x1_monthly/lead(cpi_u_x1_monthly, 1)) %>% 
   filter(date <= "1977-12-01") %>%
   arrange(desc(date)) %>% 
-  mutate(cpiurs_nsa = accumulate(cpi_u_x1_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
+  mutate(cpiurs_nsa = accumulate(cpi_u_x1_monthly_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs = cpiurs_nsa*cpi_u/cpi_u_nsa) %>% 
-  select(-cpi_u_x1, -cpi_u_x1_gr) %>% 
+  select(-cpi_u_x1_monthly, -cpi_u_x1_monthly_gr) %>% 
   filter(date < "1977-12-01") %>% 
   arrange(date)
 
@@ -108,37 +111,47 @@ wb_df_quarterly <- wb_df_quarterly_forward <- cpi_monthly %>%
   filter(quarter <= "2019 Q4") %>% 
   bind_rows(., wb_df_quarterly_forward)
 
-wb_df_annual_backward <- cpi_monthly %>% 
-  mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
-         date = as.Date(date)) %>% 
-  select(date, year, cpi_u, cpi_u_nsa, cpi_u_core, cpi_u_core_nsa, cpiurs, cpiurs_nsa, 
-         cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa) %>% 
-  left_join(cpi_u_x1, by = "date") %>% 
-  mutate(cpi_u_x1_gr = lag(cpi_u_x1, 1)/cpi_u_x1) %>% 
-  filter(date <= "1977-12-01") %>%
-  arrange(desc(date)) %>% 
-  mutate(cpiurs_nsa = accumulate(cpi_u_x1_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
-         cpiurs = cpiurs_nsa*cpi_u/cpi_u_nsa) %>% 
-  select(-cpi_u_x1, -cpi_u_x1_gr, -date) %>% 
-  group_by(year) %>% 
-  summarise(cpi_u = round(mean(cpi_u_nsa), 1),
-            cpi_u_core = round(mean(cpi_u_core_nsa), 1),
-            cpiurs = round(mean(cpiurs_nsa), 1),
-            cpiurs_core = round(mean(cpiurs_core_nsa), 1),
-            cpi_u_medcare = round(mean(cpi_u_medcare_nsa), 1))
-
-
-wb_df_annual <- cpi_monthly %>% 
+wb_df_annual_backward <- api_output %>% 
+  filter(period == "M13") %>%
+  select(seriesID, year, value) %>% 
   filter(year != current_year) %>% 
-  group_by(year) %>% 
-  summarise(cpi_u = round(mean(cpi_u_nsa), 1),
-            cpi_u_core = round(mean(cpi_u_core_nsa), 1),
-            cpi_u_medcare = round(mean(cpi_u_medcare_nsa), 1)) %>% 
+  mutate(year = as.numeric(year),
+         value = as.numeric(value)) %>% 
+  pivot_wider(id_cols = year, 
+              names_from = seriesID,
+              values_from = value) %>% 
+  rename(cpi_u = CUUR0000SA0,
+         cpi_u_core = CUUR0000SA0L1E,
+         cpi_u_medcare = CUUR0000SAM) %>% 
+  select(-SUUR0000SA0) %>%  
+  filter(year <= 1978) %>%
   left_join(cpiurs_ann, by = "year") %>% 
-  select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare) %>% 
-  filter(year > 1977) %>% 
+  left_join(cpi_u_x1_ann, by = "year") %>% 
+  arrange(year) %>% 
+  mutate(cpi_u_x1_ann_gr = cpi_u_x1_ann/lead(cpi_u_x1_ann, 1)) %>% 
+  arrange(desc(year)) %>% 
+  mutate(cpiurs = accumulate(cpi_u_x1_ann_gr[2:n()], function(x, y) x*y, .init = cpiurs[1])) %>% 
+  select(-cpi_u_x1_ann, -cpi_u_x1_ann_gr) %>% 
+  filter(year < 1978)
+
+wb_df_annual <- api_output %>% 
+  filter(period == "M13") %>%
+  select(seriesID, year, value) %>% 
+  filter(year != current_year) %>% 
+  mutate(year = as.numeric(year),
+         value = as.numeric(value)) %>% 
+  pivot_wider(id_cols = year, 
+              names_from = seriesID,
+              values_from = value) %>% 
+  rename(cpi_u = CUUR0000SA0,
+         cpi_u_core = CUUR0000SA0L1E,
+         cpi_u_medcare = CUUR0000SAM) %>% 
+  select(-SUUR0000SA0) %>% 
+  left_join(cpiurs_ann, by = "year") %>% 
+  filter(year >= 1978) %>% 
   rbind(., wb_df_annual_backward) %>% 
-  arrange(year)
+  arrange(year) %>%
+  select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare)
 
 get_bea_table <- function(tablename) {
   bea_specs <- list(

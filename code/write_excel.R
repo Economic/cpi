@@ -107,26 +107,24 @@ freezePane(wb, sheet = "Monthly", firstActiveRow = 5, firstActiveCol = 2)
 writeData(wb, wb_df_monthly, sheet = "Monthly", startRow = 5, startCol = 1, colNames = FALSE)
 
 percent_fun <- function(x) {
-  addStyle(wb, sheet = "Monthly", style = createStyle(numFmt = "PERCENTAGE"), rows = 1:nrow(wb_df)+1, cols = x)
+  addStyle(wb, sheet = "Monthly", style = createStyle(numFmt = "PERCENTAGE"), rows = 1:nrow(wb_df_monthly)+1, cols = x)
 }
 
 walk(c(13, 15, 17, 19), percent_fun)
 
 addStyle(wb, sheet = "Monthly", style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
-                                                    borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 1:nrow(wb_df)+4, cols = 12)
+                                                    borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 1:nrow(wb_df_monthly)+4, cols = 12)
 addStyle(wb, sheet = "Monthly", style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
                                                     borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 1, cols = 12)
 addStyle(wb, sheet = "Monthly", style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
                                                     borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 2, cols = 12)
 
 addStyle(wb, sheet = "Monthly", style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
-                                                    borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 1:nrow(wb_df)+4, cols = 16)
+                                                    borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 1:nrow(wb_df_monthly)+4, cols = 16)
 addStyle(wb, sheet = "Monthly", style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
                                                     borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 1, cols = 16)
-addStyle(wb, sheet = "Monthly", 
-         style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
-                                                    borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), 
-         rows = 2, cols = 16)
+addStyle(wb, sheet = "Monthly", style = createStyle(border = "left", borderColour = getOption("openxlsx.borderColour", "black"),  
+                                                    borderStyle = (getOption("openxlsx.borderStyle", "dashed"))), rows = 2, cols = 16)
 
 
 addWorksheet(wb, sheetName = "Quarterly")
@@ -144,7 +142,7 @@ writeData(wb, x = "NSA", sheet = "Quarterly", startRow = 2, startCol = 3)
 writeData(wb, x = "1982-84=100", sheet = "Quarterly", startRow = 3, startCol = 3)
 writeData(wb, x = "Calculated from monthly", sheet = "Quarterly", startRow = 4, startCol = 3)
 
-mergeCells(wb, sheet = "Monthly", rows = 1, cols = 2:3)
+mergeCells(wb, sheet = "Quarterly", rows = 1, cols = 2:3)
 
 writeData(wb, x = "CPI-U-Core", sheet = "Quarterly", startRow = 1, startCol = 4)
 addStyle(wb, sheet = "Quarterly", style = createStyle(halign = "center", valign = "center", textDecoration = "bold"), rows = 1, cols = 4)
@@ -272,5 +270,5 @@ freezePane(wb, sheet = "Alt Indices", firstActiveRow = 4, firstActiveCol = 2)
 
 writeData(wb, wb_df_alt_indices, sheet = "Alt Indices", startRow = 4, startCol = 1, colNames = FALSE)
 
-saveWorkbook(wb, here("output/test_wb.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, here("output/price_indices.xlsx"), overwrite = TRUE)
   

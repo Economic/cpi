@@ -8,7 +8,7 @@ library(here)
 library(zoo)
 
 #year
-current_year <- c(2020)
+current_year <- c(2021)
 
 # run script to pull in CPI
 source("code/cpi.R", echo = TRUE)

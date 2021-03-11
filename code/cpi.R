@@ -9,11 +9,11 @@ cpi_codes <- c("CUSR0000SA0",
                "SUUR0000SA0")
 
 #BLS API payloads
-payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'=current_year,'registrationkey'=Sys.getenv("BLS_REG_KEY"))
-payload2 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"))
-payload3 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"))
-payload4 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
-payload5 <- list('seriesid'=cpi_codes, 'startyear'='1947', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
+payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'=current_year,'registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
+payload2 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
+payload3 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
+payload4 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE) 
+payload5 <- list('seriesid'=cpi_codes, 'startyear'='1947', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE) 
 
 #Get bls data ####
 df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
@@ -26,8 +26,8 @@ df5 <- blsAPI(payload5, api_version = 2, return_data_frame = TRUE)
 api_output <- bind_rows(df1, df2, df3, df4, df5)
 
 #download cpiurs excel file files
-#system(paste0("wget -N https://www.bls.gov/cpi/research-series/allitems.xlsx -P", here("data/")))
-#system(paste0("wget -N https://www.bls.gov/cpi/research-series/alllessfe.xlsx -P", here("data/")))
+system(paste0("wget -N https://www.bls.gov/cpi/research-series/allitems.xlsx -P", here("data/")))
+system(paste0("wget -N https://www.bls.gov/cpi/research-series/alllessfe.xlsx -P", here("data/")))
 
 
 #Clean data for output ####
@@ -84,6 +84,7 @@ cpiurs_ann <- cpiurs %>%
 #monthly cpi includes CPI U (SA, NSA) and CPI U CORE (SA, NSA)
 #  calculate months that don't yet exist (only update once per year) apply change from CPI
 cpi_monthly <- api_output %>% 
+  filter(period != "M13") %>% 
   mutate(month = as.numeric(substr(period,2,3)),
          value = as.numeric(value),
          year = as.numeric(year)) %>% 
@@ -118,11 +119,19 @@ cpi_quarterly <- cpi_monthly %>%
             cpi_u_medcare = round(mean(cpi_u_medcare), 1),
             cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 1))
 
-cpi_annual <- cpi_monthly %>% 
+cpi_annual <- api_output %>% 
+  filter(period == "M13") %>%
+  select(seriesID, year, value) %>% 
   filter(year != current_year) %>% 
-  group_by(year) %>% 
-  summarise(cpi_u = round(mean(cpi_u_nsa),1),
-            cpi_u_core = round(mean(cpi_u_core_nsa),1)) %>% 
+  mutate(year = as.numeric(year),
+         value = as.numeric(value)) %>% 
+  pivot_wider(id_cols = year, 
+              names_from = seriesID,
+              values_from = value) %>% 
+  rename(cpi_u = CUUR0000SA0,
+         cpi_u_core = CUUR0000SA0L1E,
+         cpi_u_medcare = CUUR0000SAM) %>% 
+  select(-SUUR0000SA0) %>% 
   left_join(cpiurs_ann, by = "year")
 
 write_csv(cpi_annual, here("output/cpi_annual.csv"))
