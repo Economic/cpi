@@ -42,12 +42,12 @@ month_xwalk <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12, NA),
                           period = c("JAN","FEB","MAR","APR","MAY","JUNE","JULY","AUG","SEP","OCT","NOV","DEC","AVG"))
 
 #Get CPI-U-RS data Seasonally adjusted and not seasonally adjusted and get into long format.
-cpiurs_nsa <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_NSA", skip = 6) %>% 
+cpiurs_nsa <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_NSA", skip = 5) %>% 
   pivot_longer(cols = -YEAR, 
                names_to = "period", 
                values_to = "cpiurs_nsa")
 
-cpiurs <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_SA", skip = 6) %>% 
+cpiurs <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_SA", skip = 5) %>% 
   pivot_longer(cols = -YEAR, 
                names_to = "period", 
                values_to = "cpiurs") %>% 
@@ -57,12 +57,12 @@ cpiurs <- read_excel(here("data/allitems.xlsx"), sheet = "All Items_SA", skip = 
 
 
 #CPI-U-RS less food and energy (core)
-cpiurs_core_nsa <- read_excel(here("data/alllessfe.xlsx"), sheet = "All Items Less_NSA", skip = 6) %>% 
+cpiurs_core_nsa <- read_excel(here("data/alllessfe.xlsx"), sheet = "All Items Less_NSA", skip = 5) %>% 
   pivot_longer(cols = -YEAR, 
                names_to = "period", 
                values_to = "cpiurs_core_nsa")
 
-cpiurs_core <- read_excel(here("data/alllessfe.xlsx"), sheet = "All Items Less_SA", skip = 6) %>% 
+cpiurs_core <- read_excel(here("data/alllessfe.xlsx"), sheet = "All Items Less_SA", skip = 5) %>% 
   pivot_longer(cols = -YEAR, 
                names_to = "period", 
                values_to = "cpiurs_core") %>% 
