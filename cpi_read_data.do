@@ -56,13 +56,13 @@ tempfile cpi_ann
 save `cpi_ann'
 
 *apply changes from CPI-U-X1 to CPI-U-RS to extend back from 1978 to 1947
-import delim ${data}cpi_u_x1.csv, clear
+import delim ${data}cpi_u_x1_annual.csv, clear
 merge 1:1 year using `cpi_ann'
 drop if _merge == 1
 drop _merge
 
 tsset year
-while cpiurs == . & year == 1947{
+while cpiurs == . & year == 1947 {
     replace cpiurs = f1.cpiurs * (cpi_u_x1 / f1.cpi_u_x1) if year <= 1977
 }
 

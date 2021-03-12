@@ -15,7 +15,7 @@ cpi_codes <- c("CUSR0000SA0",
 current_year <- 2020
 
 #BLS API payloads
-payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'='2020','registrationkey'=Sys.getenv("BLS_REG_KEY"))
+payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'='2021','registrationkey'=Sys.getenv("BLS_REG_KEY"))
 payload2 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"))
 payload3 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"))
 payload4 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY")) 
