@@ -6,12 +6,21 @@ library(blsAPI)
 library(bea.R)
 library(here)
 library(zoo)
+library(tsibble)
+library(feasts)
+library(seasonal)
+library(stringr)
 
 #year
 current_year <- c(2021)
 
 # run script to pull in CPI
-source("code/cpi.R", echo = TRUE)
+#note: IF BLS HAS NOT RELEASE CPI DATA FOR THE PAST YEAR, RUN THIS SCRIPT
+source("code/cpi_alt.R", echo = TRUE)
+
+# run script to pull in CPI
+#note: IF BLS HAS RELEASED CPI DATA FOR PAST YEAR, RUN THIS SCRIPT
+#("code/cpi.R", echo = TRUE)
 
 # run script to format data for excel
 source("code/excel_data.R", echo = TRUE)
