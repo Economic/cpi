@@ -23,8 +23,8 @@ tsset yearmonth
 
 *extend cpiurs forward to 2019 since it's not released on a monthly basis
 *2019 is currently hardcoded, fix this to be based on missing values later
-replace cpiurs_nsa = l1.cpiurs_nsa * cpi_u_nsa / l1.cpi_u_nsa if year == 2019
-replace cpiurs = cpiurs_nsa * cpi_u / cpi_u_nsa if year == 2019
+replace cpiurs_nsa = l1.cpiurs_nsa * cpi_u_nsa / l1.cpi_u_nsa if year == 2020
+replace cpiurs = cpiurs_nsa * cpi_u / cpi_u_nsa if year == 2020
 
 *label all variables
 lab var cpi_u "All items in U.S. city average (seasonally adjusted)"

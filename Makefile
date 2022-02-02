@@ -3,7 +3,7 @@ all: updatedata deploydata
 .PHONY: all updatedata deploydata
 
 updatedata:
-	Rscript code/cpi.R
+	Rscript code/cpi_master.R
 	stata -b do cpi_read_data.do &
 
 deploydata:
