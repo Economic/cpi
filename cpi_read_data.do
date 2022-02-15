@@ -21,10 +21,12 @@ destring cpi*, replace
 gen yearmonth = ym(year, month)
 tsset yearmonth
 
-*extend cpiurs forward to 2019 since it's not released on a monthly basis
-*2019 is currently hardcoded, fix this to be based on missing values later
-replace cpiurs_nsa = l1.cpiurs_nsa * cpi_u_nsa / l1.cpi_u_nsa if year == 2020
-replace cpiurs = cpiurs_nsa * cpi_u / cpi_u_nsa if year == 2020
+*extend cpiurs forward to 2021 since it's not released on a monthly basis
+replace cpiurs_nsa = l1.cpiurs_nsa * cpi_u_nsa / l1.cpi_u_nsa if year == 2021
+replace cpiurs = cpiurs_nsa * cpi_u / cpi_u_nsa if year == 2021
+
+replace cpiurs_core_nsa = l1.cpiurs_core_nsa * cpi_u_core_nsa / l1.cpi_u_core_nsa if year == 2021
+replace cpiurs = cpiurs_core_nsa * cpi_u / cpi_u_core_nsa if year == 2021
 
 *label all variables
 lab var cpi_u "All items in U.S. city average (seasonally adjusted)"
@@ -35,11 +37,12 @@ lab var cpiurs "CPI-U-RS, All items (seasonally adjusted)"
 lab var cpiurs_nsa "CPI-U-RS, All items (not seasonally adjusted)"
 lab var cpiurs_core "CPI-U-RS, All items less food and energy (seasonally adjusted)"
 lab var cpiurs_core_nsa "CPI-U-RS, All items less food and energy (not seasonally adjusted)"
-
+drop yearmonth
 saveold cpi_monthly.dta, version(13) replace
 
 *read in cpi data, annual data
 import delim ${output}cpi_annual.csv, clear
+tsset year, yearly
 
 lab var cpi_u "All items in U.S. city average"
 lab var cpi_u_core "All items less food and energy in U.S. city average"
@@ -51,7 +54,8 @@ replace cpiurs = "." if cpiurs == "NA"
 replace cpiurs_core = "." if cpiurs_core == "NA"
 
 destring cpi*, replace
-
+replace cpiurs = l1.cpiurs * cpi_u/ l1.cpi_u if year == 2021
+replace cpiurs_core = l1.cpiurs_core * cpi_u_core/ l1.cpi_u_core if year == 2021
 tempfile cpi_ann
 save `cpi_ann'
 
@@ -67,6 +71,7 @@ while cpiurs == . & year == 1947 {
 }
 
 replace cpiurs = round(cpiurs, .1)
+replace cpiurs_core = round(cpiurs_core, .1)
 drop cpi_u_x1
 
 saveold cpi_annual.dta, version(13) replace
