@@ -66,7 +66,7 @@ drop if _merge == 1
 drop _merge
 
 tsset year
-while cpiurs == . & year == 1947{
+while cpiurs == . & year == 1947 {
     replace cpiurs = f1.cpiurs * (cpi_u_x1 / f1.cpi_u_x1) if year <= 1977
 }
 
