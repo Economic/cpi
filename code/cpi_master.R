@@ -12,7 +12,7 @@ library(seasonal)
 library(stringr)
 
 #year
-current_year <- c(2021)
+current_year <- c(2022)
 
 # run script to pull in CPI
 #note: IF BLS HAS NOT RELEASE CPI DATA FOR THE PAST YEAR, RUN THIS SCRIPT
@@ -27,3 +27,4 @@ source("code/excel_data.R", echo = TRUE)
 
 # map data to excel, to be saved on R drive
 source("code/write_excel.R", echo = TRUE)
+

@@ -42,7 +42,7 @@ wb_df_monthly_forward <- cpi_monthly %>%
   mutate(cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
          cpi_u_core_nsa_gr = cpi_u_core_nsa/lag(cpi_u_core_nsa, 1)) %>% 
   # filter out data prior current year
-  filter(date >= paste0((current_year - 1),"-12-01")) %>% 
+  filter(date >= paste0((current_year - 2),"-12-01")) %>% 
   # use december of prior year data to interpolate CPIURS/CPIURS core forward
   mutate(cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs_core_nsa = accumulate(cpi_u_core_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_core_nsa[1])) %>% 
@@ -58,7 +58,7 @@ wb_df_monthly <- cpi_monthly %>%
   select(date, cpi_u, cpi_u_nsa, cpi_u_core, cpi_u_core_nsa, cpiurs, cpiurs_nsa, 
          cpiurs_core, cpiurs_core_nsa, cpi_u_medcare, cpi_u_medcare_nsa) %>% 
   # isolate data for years not backcast/forward interpolated
-  filter(date < paste0((current_year - 1),"-12-01") & date >= "1977-12-01") %>% 
+  filter(date < paste0((current_year - 2),"-12-01") & date >= "1977-12-01") %>% 
   # bind all dataframes together
   rbind(., wb_df_monthly_backward, wb_df_monthly_forward) %>%
   arrange(date) %>% 
@@ -100,7 +100,7 @@ wb_df_quarterly_forward <- cpi_monthly %>%
   mutate(cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
          cpi_u_core_nsa_gr = cpi_u_core_nsa/lag(cpi_u_core_nsa, 1)) %>% 
   # filter out data prior current year
-  filter(date >= paste0((current_year - 1),"-12-01")) %>% 
+  filter(date >= paste0((current_year - 2),"-12-01")) %>% 
   # use december of prior year data to interpolate CPIURS/CPIURS core forward
   mutate(cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs_core_nsa = accumulate(cpi_u_core_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_core_nsa[1])) %>% 
@@ -142,7 +142,7 @@ wb_df_quarterly <- cpi_monthly %>%
             cpiurs_core_nsa = round(mean(cpiurs_core_nsa), 3),
             cpi_u_medcare = round(mean(cpi_u_medcare), 3),
             cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 3)) %>% 
-  filter(quarter <= paste((current_year - 1),"Q4")) %>% 
+  filter(quarter <= paste((current_year - 2),"Q4")) %>% 
   bind_rows(., wb_df_quarterly_forward)
 
 ### WORKBOOK ANNUAL DATA ####
