@@ -12,7 +12,7 @@ library(seasonal)
 library(stringr)
 
 #year
-current_year <- c(2021)
+current_year <- c(2022)
 
 # run script to pull in CPI
 #note: IF BLS HAS NOT RELEASE CPI DATA FOR THE PAST YEAR, RUN THIS SCRIPT

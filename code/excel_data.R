@@ -193,6 +193,12 @@ wb_df_annual <- api_output %>%
   # row bind backcast data to raw data
   rbind(., wb_df_annual_backward) %>% 
   arrange(year) %>%
+  mutate(cpiurs = case_when(
+            year == (current_year - 1) ~ (lag(cpiurs, 1) * (cpi_u) / lag(cpi_u, 1)),
+            TRUE ~ cpiurs),
+         cpiurs_core = case_when(
+           year == (current_year - 1) ~ (lag(cpiurs_core, 1) * (cpi_u_core) / lag(cpi_u_core, 1)),
+           TRUE ~ cpiurs_core)) %>% 
   select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare)
 
 ### WORKBOOK ALT INDICES ####
