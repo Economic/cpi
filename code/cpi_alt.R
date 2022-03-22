@@ -100,17 +100,18 @@ cpiurs_core_ann <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
 
 #monthly data
 cpiurs_tot_mon <- cpiurs_mon %>% 
-  left_join(cpiurs_core_mon, by = c("year", "period", "month")) %>%
-  select(year, month, cpiurs, cpiurs_nsa, cpiurs_core, cpiurs_core_nsa) %>% 
-  mutate(year = as.numeric(year))
+  left_join(cpiurs_core_mon, by = c("year", "period", "month")) %>% 
+  mutate(year = as.numeric(year)) %>%
+  select(year, month, cpiurs, cpiurs_nsa, cpiurs_core, cpiurs_core_nsa) 
 
 #annual data: use not seasonally adjusted annual averages provided in BLS spreadsheets
 cpiurs_tot_ann <- cpiurs_ann %>% 
   left_join(cpiurs_core_ann, by = c("year", "period")) %>%
+  mutate(year = as.numeric(year)) %>%
   select(year, cpiurs_nsa, cpiurs_core_nsa) %>% 
   rename(cpiurs = cpiurs_nsa,
-         cpiurs_core = cpiurs_core_nsa) %>% 
-  mutate(year = as.numeric(year))
+         cpiurs_core = cpiurs_core_nsa)
+  
 
 # assign average cpiurs for past year as value
 cpiurs_val <- cpiurs_tot_mon %>% 
@@ -127,7 +128,8 @@ cpiurs_core_val <- cpiurs_tot_mon %>%
 cpi_monthly <- api_output %>% 
   filter(period != "M13") %>% 
   mutate(month = as.numeric(substr(period,2,3)),
-         value = as.numeric(value)) %>% 
+         value = as.numeric(value),
+         year = as.numeric(year)) %>% 
   select(seriesID, year, month, value) %>% 
   pivot_wider(id_cols = c(year, month), 
               names_from = seriesID,

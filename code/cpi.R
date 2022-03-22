@@ -33,7 +33,6 @@ system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allles
 #Clean data for output ####
 #create crosswalk for months
 month_xwalk <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12, NA), 
-
                           period = c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC","AVG"))
 
 ## Get CPI-U-RS data Seasonally adjusted and not seasonally adjusted and get into long format.
@@ -69,7 +68,6 @@ cpiurs_ann <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1"
   filter(period == "AVG") %>% rename(year = YEAR)
 
 #CPI-U-RS less food and energy (core)
-
 cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
   # tranform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
@@ -87,7 +85,6 @@ cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
   mutate(year = str_sub(month_date, start = 1, end = 4), 
          period = toupper(str_sub(month_date, start = 6))) %>% 
   # join numeric month for easier handling 
-
   left_join(month_xwalk, by = "period") %>% 
   # convert back to data frame
   as.data.frame() %>% 
@@ -96,7 +93,7 @@ cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
 
 # import CPIURS data
 cpiurs_core_ann <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
-  # tranform to long format
+  # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
   # extract annual data
   filter(period == "AVG") %>% rename(year = YEAR)
@@ -114,7 +111,6 @@ cpiurs_tot_ann <- cpiurs_ann %>%
   select(year, cpiurs_nsa, cpiurs_core_nsa) %>% 
   rename(cpiurs = cpiurs_nsa,
          cpiurs_core = cpiurs_core_nsa)
-
 #monthly cpi includes CPI U (SA, NSA) and CPI U CORE (SA, NSA)
 #  calculate months that don't yet exist (only update once per year) apply change from CPI
 cpi_monthly <- api_output %>% 
@@ -133,25 +129,8 @@ cpi_monthly <- api_output %>%
          cpi_u_medcare = CUSR0000SAM,
          cpi_u_medcare_nsa = CUUR0000SAM) %>% 
   left_join(cpiurs_tot_mon, by = c("year", "month")) %>% 
-  arrange(year, month)
-
-write_csv(cpi_monthly, here("output/cpi_monthly.csv"))
-
-cpi_quarterly <- cpi_monthly %>% 
-  mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
-         date = as.Date(date),
-         quarter = as.yearqtr(date)) %>% 
-  group_by(quarter) %>% 
-  summarise(cpi_u = round(mean(cpi_u), 1),
-            cpi_u_nsa = round(mean(cpi_u_nsa), 1),
-            cpi_u_core = round(mean(cpi_u_core), 1),
-            cpi_u_core_nsa = round(mean(cpi_u_core_nsa), 1),
-            cpiurs = round(mean(cpiurs), 1),
-            cpiurs_nsa = round(mean(cpiurs_nsa), 1),
-            cpiurs_core = round(mean(cpiurs_core), 1),
-            cpiurs_core_nsa = round(mean(cpiurs_core_nsa), 1),
-            cpi_u_medcare = round(mean(cpi_u_medcare), 1),
-            cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 1))
+  arrange(year, month) %>% 
+  select(-SUUR0000SA0)
 
 cpi_annual <- api_output %>% 
   filter(period == "M13") %>%
@@ -167,5 +146,3 @@ cpi_annual <- api_output %>%
          cpi_u_medcare = CUUR0000SAM) %>% 
   select(-SUUR0000SA0) %>% 
   left_join(cpiurs_tot_ann, by = "year")
-
-write_csv(cpi_annual, here("output/cpi_annual.csv"))

@@ -7,9 +7,17 @@ global data data/
 *read in cpi data, monthly data
 import delim ${output}cpi_monthly.csv, clear
 *make NA's missing and destring
+*replace cpi_u_core = round(cpi_u_core, 0.1)
+*replace cpi_u_core_nsa = round(cpi_u_core_nsa, 0.1)
+replace cpiurs = round(cpiurs, 0.1)
+replace cpiurs_nsa = round(cpiurs_nsa, 0.1)
+replace cpiurs_core = round(cpiurs_core, 0.1)
+replace cpiurs_core_nsa = round(cpiurs_core_nsa, 0.1)
+
+tostring cpi*, force replace
+
 replace cpi_u_core = "." if cpi_u_core == "NA"
 replace cpi_u_core_nsa = "." if cpi_u_core_nsa == "NA"
-replace cpiurs = "." if cpiurs == "NA"
 replace cpiurs = "." if cpiurs == "NA"
 replace cpiurs_nsa = "." if cpiurs_nsa == "NA"
 replace cpiurs_core = "." if cpiurs_core == "NA"
@@ -20,13 +28,6 @@ destring cpi*, replace
 *creat timeseries for lags and leads
 gen yearmonth = ym(year, month)
 tsset yearmonth
-
-*extend cpiurs forward to 2021 since it's not released on a monthly basis
-replace cpiurs_nsa = l1.cpiurs_nsa * cpi_u_nsa / l1.cpi_u_nsa if year == 2021
-replace cpiurs = cpiurs_nsa * cpi_u / cpi_u_nsa if year == 2021
-
-replace cpiurs_core_nsa = l1.cpiurs_core_nsa * cpi_u_core_nsa / l1.cpi_u_core_nsa if year == 2021
-replace cpiurs = cpiurs_core_nsa * cpi_u / cpi_u_core_nsa if year == 2021
 
 *label all variables
 lab var cpi_u "All items in U.S. city average (seasonally adjusted)"
@@ -54,24 +55,7 @@ replace cpiurs = "." if cpiurs == "NA"
 replace cpiurs_core = "." if cpiurs_core == "NA"
 
 destring cpi*, replace
-replace cpiurs = l1.cpiurs * cpi_u/ l1.cpi_u if year == 2021
-replace cpiurs_core = l1.cpiurs_core * cpi_u_core/ l1.cpi_u_core if year == 2021
 tempfile cpi_ann
 save `cpi_ann'
-
-*apply changes from CPI-U-X1 to CPI-U-RS to extend back from 1978 to 1947
-import delim ${data}cpi_u_x1_annual.csv, clear
-merge 1:1 year using `cpi_ann'
-drop if _merge == 1
-drop _merge
-
-tsset year
-while cpiurs == . & year == 1947 {
-    replace cpiurs = f1.cpiurs * (cpi_u_x1 / f1.cpi_u_x1) if year <= 1977
-}
-
-replace cpiurs = round(cpiurs, .1)
-replace cpiurs_core = round(cpiurs_core, .1)
-drop cpi_u_x1
 
 saveold cpi_annual.dta, version(13) replace
