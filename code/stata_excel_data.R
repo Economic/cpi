@@ -181,6 +181,12 @@ wb_df_annual <- cpi_annual %>%
       year == (current_year - 1) & is.na(cpiurs_core) ~ (lag(cpiurs_core, 1) * (cpi_u_core) / lag(cpi_u_core, 1)),
       TRUE ~ cpiurs_core)) %>% 
   arrange(year) %>%
+  mutate(cpiurs = case_when(
+            year == (current_year - 1) & is.na(cpiurs) ~ (lag(cpiurs, 1) * (cpi_u) / lag(cpi_u, 1)),
+            TRUE ~ cpiurs),
+         cpiurs_core = case_when(
+           year == (current_year - 1) & is.na(cpiurs_core) ~ (lag(cpiurs_core, 1) * (cpi_u_core) / lag(cpi_u_core, 1)),
+           TRUE ~ cpiurs_core)) %>% 
   select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare)
 
 write_csv(wb_df_annual, here("output/cpi_annual.csv"))
