@@ -32,6 +32,7 @@ df_monthly_backward <- cpi_monthly %>%
   filter(date < "1977-12-01") %>% 
   arrange(date)
 
+
 # monthly forward projection
 #note: BLS only releases CPIURS/CPIURS core data once a year, 
 #      use prior year data to interpolate monthly data
@@ -64,7 +65,8 @@ df_monthly <- cpi_monthly %>%
   arrange(date) 
 
 stata_cpi_monthly <- df_monthly %>% 
-  select(-date, -cpi_u_medcare, -cpi_u_medcare_nsa) %>% 
+  select(-date, -cpi_u_medcare, -cpi_u_medcare_nsa)  %>% 
+  mutate_at(vars(matches("cpi")), as.numeric) %>% 
   write_csv(here("output/cpi_monthly.csv"))
 
 wb_df_monthly <- df_monthly %>% 
@@ -97,8 +99,9 @@ wb_df_monthly <- df_monthly %>%
          cpi_u_core_mom_sa_unit = round(cpi_u_core_mom_sa_unit, 2),
          cpi_u_core_mom_sa_percent = round(cpi_u_core_mom_sa_percent, 3),
          cpi_u_core_yoy_nsa_unit = round(cpi_u_core_yoy_nsa_unit, 2),
-         cpi_u_core_yoy_nsa_percent = round(cpi_u_core_yoy_nsa_percent, 3)) 
-
+         cpi_u_core_yoy_nsa_percent = round(cpi_u_core_yoy_nsa_percent, 3)) %>% 
+  mutate_at(vars(matches("cpi")), as.numeric)
+  
 
 ### WORKBOOK QUARTERLY DATA ####
 # interpolate quarterly data forward
@@ -161,11 +164,14 @@ wb_df_annual_backward <- cpi_annual %>%
   arrange(year) %>% 
   # use cpiux1 data to calculate growth rate
   mutate(cpi_u_x1_ann_gr = cpi_u_x1_ann/lead(cpi_u_x1_ann, 1)) %>% 
+  # restrict date to prior 1978
+  filter(year <= 1978) %>% 
+  # rearrange by date for proper implementation of accumulate function
   arrange(desc(year)) %>% 
   # apply growth rate backwards to 1947
-  mutate(cpiurs = accumulate(cpi_u_x1_ann_gr[2:n()], function(x, y) x*y, .init = cpiurs[1])) %>% 
-  select(-cpi_u_x1_ann, -cpi_u_x1_ann_gr) %>% 
-  filter(year < 1978)
+  mutate(cpiurs = accumulate(cpi_u_x1_ann_gr[2:n()], function(x, y) x*y, .init = cpiurs[1]),
+         cpiurs_core = accumulate(cpi_u_x1_ann_gr[2:n()], function(x, y) x*y, .init = cpiurs_core[1])) %>% 
+  select(-cpi_u_x1_ann, -cpi_u_x1_ann_gr)
 
 # combine backcast and raw annual data
 wb_df_annual <- cpi_annual %>% 
@@ -187,6 +193,7 @@ wb_df_annual <- cpi_annual %>%
          cpiurs_core = case_when(
            year == (current_year - 1) & is.na(cpiurs_core) ~ (lag(cpiurs_core, 1) * (cpi_u_core) / lag(cpi_u_core, 1)),
            TRUE ~ cpiurs_core)) %>% 
+  mutate_at(vars(matches("cpi")), as.numeric) %>% 
   select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare)
 
 write_csv(wb_df_annual, here("output/cpi_annual.csv"))

@@ -7,12 +7,6 @@ global data data/
 *read in cpi data, monthly data
 import delim ${output}cpi_monthly.csv, clear
 *make NA's missing and destring
-*replace cpi_u_core = round(cpi_u_core, 0.1)
-*replace cpi_u_core_nsa = round(cpi_u_core_nsa, 0.1)
-replace cpiurs = round(cpiurs, 0.1)
-replace cpiurs_nsa = round(cpiurs_nsa, 0.1)
-replace cpiurs_core = round(cpiurs_core, 0.1)
-replace cpiurs_core_nsa = round(cpiurs_core_nsa, 0.1)
 
 tostring cpi*, force replace
 
@@ -24,6 +18,14 @@ replace cpiurs_core = "." if cpiurs_core == "NA"
 replace cpiurs_core_nsa = "." if cpiurs_core_nsa == "NA"
 
 destring cpi*, replace
+
+replace cpi_u_core = round(cpi_u_core, 0.1)
+replace cpi_u_core_nsa = round(cpi_u_core_nsa, 0.1)
+replace cpiurs = round(cpiurs, 0.1)
+replace cpiurs_nsa = round(cpiurs_nsa, 0.1)
+replace cpiurs_core = round(cpiurs_core, 0.1)
+replace cpiurs_core_nsa = round(cpiurs_core_nsa, 0.1)
+
 
 *creat timeseries for lags and leads
 gen yearmonth = ym(year, month)
