@@ -176,7 +176,7 @@ wb_df_annual_backward <- cpi_annual %>%
 # combine backcast and raw annual data
 wb_df_annual <- cpi_annual %>% 
   # isolate data after 1978
-  filter(year >= 1978) %>% 
+  filter(year > 1978) %>% 
   # row bind backcast data to raw data
   rbind(., wb_df_annual_backward)  %>%
   arrange(year) %>% 
