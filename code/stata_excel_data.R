@@ -1,5 +1,5 @@
 ### CPI-U-X1 DATA ####
-#note: cpi-u-x1 was experimental data that proceeded cpi-u-rs, used to backcast cpi-u-rs to 1947
+#note: cpi-u-x1 was experimental data that preceded cpi-u-rs, used to backcast cpi-u-rs to 1947
 # import monthly data
 cpi_u_x1_monthly <- read_csv(here("data/cpi_u_x1_monthly.csv")) %>% 
   mutate(date = as.Date(date))
