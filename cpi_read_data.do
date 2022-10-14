@@ -48,6 +48,9 @@ import delim ${output}cpi_annual.csv, clear
 tsset year
 
 replace cpi_u_core = "." if cpi_u_core == "NA"
+replace cpiurs = "." if cpiurs == "NA"
+replace cpiurs_core = "." if cpiurs_core == "NA"
+replace cpi_u_medcare = "." if cpi_u_medcare == "NA"
 
 destring cpi*, replace
 
