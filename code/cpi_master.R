@@ -11,7 +11,7 @@ library(seasonal)
 library(stringr)
 
 #year
-current_year <- c(2022)
+current_year <- c(2023)
 
 
 # run script to pull in CPI
