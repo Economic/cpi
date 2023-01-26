@@ -7,7 +7,6 @@ library(bea.R)
 library(here)
 library(zoo)
 library(tsibble)
-library(feasts)
 library(seasonal)
 library(stringr)
 
