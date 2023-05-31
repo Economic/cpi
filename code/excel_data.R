@@ -62,6 +62,8 @@ wb_df_monthly <- cpi_monthly %>%
   # bind all dataframes together
   rbind(., wb_df_monthly_backward, wb_df_monthly_forward) %>%
   arrange(date) %>% 
+  # write .csv used in stata .do file
+  write_csv(here("output/cpi_monthly.csv")) %>% 
   # calculate CPI-U and CPI-U core changes
   mutate(cpi_u_mom_sa_unit = cpi_u - lag(cpi_u, 1),
          cpi_u_mom_sa_percent = cpi_u_mom_sa_unit/lag(cpi_u, 1),
@@ -90,6 +92,8 @@ wb_df_monthly <- cpi_monthly %>%
          cpi_u_core_mom_sa_percent = round(cpi_u_core_mom_sa_percent, 3),
          cpi_u_core_yoy_nsa_unit = round(cpi_u_core_yoy_nsa_unit, 2),
          cpi_u_core_yoy_nsa_percent = round(cpi_u_core_yoy_nsa_percent, 3)) 
+
+write_csv(wb_df_monthly, here("output/cpi_monthly.csv"))
 
 ### WORKBOOK QUARTERLY DATA ####
 # interpolate quarterly data forward
@@ -147,49 +151,21 @@ wb_df_quarterly <- cpi_monthly %>%
 
 ### WORKBOOK ANNUAL DATA ####
 # backcast annual data
-wb_df_annual_backward <- api_output %>% 
-  # isolate M13 period ~ annual average
-  filter(period == "M13") %>%
-  select(seriesID, year, value) %>% 
-  filter(year != current_year) %>% 
-  mutate(year = as.numeric(year),
-         value = as.numeric(value)) %>% 
-  # pivot data wider
-  pivot_wider(id_cols = year, names_from = seriesID, values_from = value) %>% 
-  # rename variables for easier interpretation
-  rename(cpi_u = CUUR0000SA0,
-         cpi_u_core = CUUR0000SA0L1E,
-         cpi_u_medcare = CUUR0000SAM) %>% 
-  select(-SUUR0000SA0) %>% 
-  # isolate data prior to 1978
-  filter(year <= 1978) %>%
-  # merge in cpiurs and cpiux1 data
-  left_join(cpiurs_tot_ann, by = "year") %>% 
+wb_df_annual_backward <- cpi_annual %>% 
   left_join(cpi_u_x1_ann, by = "year") %>% 
   arrange(year) %>% 
   # use cpiux1 data to calculate growth rate
   mutate(cpi_u_x1_ann_gr = cpi_u_x1_ann/lead(cpi_u_x1_ann, 1)) %>% 
+  filter(year <= 1978) %>% 
   arrange(desc(year)) %>% 
   # apply growth rate backwards to 1947
   mutate(cpiurs = accumulate(cpi_u_x1_ann_gr[2:n()], function(x, y) x*y, .init = cpiurs[1])) %>% 
-  select(-cpi_u_x1_ann, -cpi_u_x1_ann_gr) %>% 
-  filter(year < 1978)
+  select(-cpi_u_x1_ann, -cpi_u_x1_ann_gr) 
 
 # combine backcast and raw annual data
-wb_df_annual <- api_output %>% 
-  filter(period == "M13") %>%
-  select(seriesID, year, value) %>% 
-  filter(year != current_year) %>% 
-  mutate(year = as.numeric(year),
-         value = as.numeric(value)) %>% 
-  pivot_wider(id_cols = year, names_from = seriesID, values_from = value) %>% 
-  rename(cpi_u = CUUR0000SA0,
-         cpi_u_core = CUUR0000SA0L1E,
-         cpi_u_medcare = CUUR0000SAM) %>% 
-  select(-SUUR0000SA0) %>% 
-  left_join(cpiurs_tot_ann, by = "year") %>% 
+wb_df_annual <- cpi_annual %>% 
   # isolate data after 1978
-  filter(year >= 1978) %>% 
+  filter(year > 1978) %>% 
   # row bind backcast data to raw data
   rbind(., wb_df_annual_backward) %>% 
   arrange(year) %>%
@@ -199,7 +175,9 @@ wb_df_annual <- api_output %>%
          cpiurs_core = case_when(
            year == (current_year - 1) & is.na(cpiurs_core) ~ (lag(cpiurs_core, 1) * (cpi_u_core) / lag(cpi_u_core, 1)),
            TRUE ~ cpiurs_core)) %>% 
-  select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare)
+  select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare) 
+
+write.csv(wb_df_annual, here("output/cpi_annual.csv"))
 
 ### WORKBOOK ALT INDICES ####
 # define BEA api function
@@ -255,6 +233,3 @@ wb_df_alt_indices <- api_output %>%
   # merge in PCE and market based PCE pulled from BEA
   right_join(bea_2.3.4, by = "year") %>% 
   arrange(year)
-
-  
-  

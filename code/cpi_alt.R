@@ -9,26 +9,12 @@ cpi_codes <- c("CUSR0000SA0",
                "SUUR0000SA0")
 
 #BLS API payloads
-payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'=current_year,'registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
-payload2 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
-payload3 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
-payload4 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE) 
-payload5 <- list('seriesid'=cpi_codes, 'startyear'='1947', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE) 
+api_output <- get_n_series_table(series_ids = cpi_codes, start_year = 1947, end_year = current_year, api_key = bls_key, tidy = TRUE, annualaverage = TRUE)
 
-#Get bls data ####
-df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
-df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
-df3 <- blsAPI(payload3, api_version = 2, return_data_frame = TRUE)
-df4 <- blsAPI(payload4, api_version = 2, return_data_frame = TRUE)
-df5 <- blsAPI(payload5, api_version = 2, return_data_frame = TRUE)
-
-#append all 20 year periods together
-api_output <- bind_rows(df1, df2, df3, df4, df5)
 
 #download cpiurs excel file files
-system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allitems.xlsx -P", here("data/")))
-system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-alllessfe.xlsx -P", here("data/")))
-
+system(paste0('wget -N -U "" https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allitems.xlsx -P', here("data")))
+system(paste0('wget -N -U "" https://www.bls.gov/cpi/research-series/r-cpi-u-rs-alllessfe.xlsx -P', here("data")))
 
 #Clean data for output ####
 #create crosswalk for months
@@ -112,27 +98,30 @@ cpiurs_tot_ann <- cpiurs_ann %>%
   rename(cpiurs = cpiurs_nsa,
          cpiurs_core = cpiurs_core_nsa)
 
+# assign average cpiurs for past year as value
+cpiurs_val <- cpiurs_tot_mon %>% 
+  group_by(year) %>% summarize(mean(cpiurs_nsa, na.rm = TRUE)) %>% 
+  filter(year == current_year - 1) %>% pull()
+
+# assign average cpiurs core for past year as value
+cpiurs_core_val <- cpiurs_tot_mon %>% 
+  group_by(year) %>% summarize(mean(cpiurs_core_nsa, na.rm = TRUE)) %>% 
+  filter(year == current_year - 1) %>% pull()
+
 #monthly cpi includes CPI U (SA, NSA) and CPI U CORE (SA, NSA)
 #  calculate months that don't yet exist (only update once per year) apply change from CPI
 cpi_monthly <- api_output %>% 
-  filter(period != "M13") %>% 
-  mutate(month = as.numeric(substr(period,2,3)),
-         value = as.numeric(value),
-         year = as.numeric(year)) %>% 
-  select(seriesID, year, month, value) %>% 
-  pivot_wider(id_cols = c(year, month), 
-              names_from = seriesID,
-              values_from = value) %>% 
+  # filter out annual data
+  filter(month != 13) %>% 
+  # merge in 
+  left_join(cpiurs_tot_mon, by = c("year", "month")) %>% 
   rename(cpi_u = CUSR0000SA0,
          cpi_u_nsa = CUUR0000SA0,
          cpi_u_core = CUSR0000SA0L1E,
          cpi_u_core_nsa = CUUR0000SA0L1E,
          cpi_u_medcare = CUSR0000SAM,
          cpi_u_medcare_nsa = CUUR0000SAM) %>% 
-  left_join(cpiurs_tot_mon, by = c("year", "month")) %>% 
   arrange(year, month)
-
-write_csv(cpi_monthly, here("output/cpi_monthly.csv"))
 
 cpi_quarterly <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
@@ -151,19 +140,12 @@ cpi_quarterly <- cpi_monthly %>%
             cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 1))
 
 cpi_annual <- api_output %>% 
-  filter(period == "M13") %>%
-  select(seriesID, year, value) %>% 
-  filter(year != current_year) %>% 
-  mutate(year = as.numeric(year),
-         value = as.numeric(value)) %>% 
-  pivot_wider(id_cols = year, 
-              names_from = seriesID,
-              values_from = value) %>% 
+  filter(month == 13) %>%
   rename(cpi_u = CUUR0000SA0,
          cpi_u_core = CUUR0000SA0L1E,
          cpi_u_medcare = CUUR0000SAM) %>% 
   select(-SUUR0000SA0) %>% 
   left_join(cpiurs_tot_ann, by = "year") %>% 
-  arrange(year)
-
-write_csv(cpi_annual, here("output/cpi_annual.csv"))
+  mutate(cpiurs = ifelse(year == current_year - 1, cpiurs_val, cpiurs),
+         cpiurs_core = ifelse(year == current_year - 1, cpiurs_core_val, cpiurs_core)) %>% 
+  select((c(year, starts_with("cpi"))))

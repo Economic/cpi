@@ -9,24 +9,12 @@ cpi_codes <- c("CUSR0000SA0",
                "SUUR0000SA0")
 
 #BLS API payloads
-payload1 <- list('seriesid'=cpi_codes, 'startyear'='2020', 'endyear'=current_year,'registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
-payload2 <- list('seriesid'=cpi_codes, 'startyear'='2000', 'endyear'='2019','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
-payload3 <- list('seriesid'=cpi_codes, 'startyear'='1980', 'endyear'='1999','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE)
-payload4 <- list('seriesid'=cpi_codes, 'startyear'='1960', 'endyear'='1979','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE) 
-payload5 <- list('seriesid'=cpi_codes, 'startyear'='1947', 'endyear'='1959','registrationkey'=Sys.getenv("BLS_REG_KEY"),'annualaverage'=TRUE) 
+api_output <- get_n_series_table(series_ids = cpi_codes, start_year = 1947, end_year = current_year, api_key = bls_key, tidy = TRUE, annualaverage = TRUE)
 
-#Get bls data ####
-df1 <- blsAPI(payload1, api_version = 2, return_data_frame = TRUE)
-df2 <- blsAPI(payload2, api_version = 2, return_data_frame = TRUE)
-df3 <- blsAPI(payload3, api_version = 2, return_data_frame = TRUE)
-df4 <- blsAPI(payload4, api_version = 2, return_data_frame = TRUE)
-df5 <- blsAPI(payload5, api_version = 2, return_data_frame = TRUE)
-
-#append all 20 year periods together
-api_output <- bind_rows(df1, df2, df3, df4, df5)
 
 #download cpiurs excel file files
-system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allitems.xlsx -P", here("data/")))
+#system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allitems.xlsx -P", here("data/")))
+download.file(url = "https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allitems.xlsx", destfile = here("data/r-cpi-u-rs-allitems.xlsx"))
 system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-alllessfe.xlsx -P", here("data/")))
 
 
