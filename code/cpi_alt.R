@@ -79,7 +79,7 @@ cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
 
 # import CPIURS data
 cpiurs_core_ann <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
-  # tranform to long format
+  # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
   # extract annual data
   filter(period == "AVG") %>% rename(year = YEAR)

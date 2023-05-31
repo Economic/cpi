@@ -21,6 +21,7 @@ system(paste0("wget -N https://www.bls.gov/cpi/research-series/r-cpi-u-rs-allles
 #Clean data for output ####
 #create crosswalk for months
 month_xwalk <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12, NA), 
+
                           period = c("JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC","AVG"))
 
 ## Get CPI-U-RS data Seasonally adjusted and not seasonally adjusted and get into long format.
@@ -56,6 +57,7 @@ cpiurs_ann <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1"
   filter(period == "AVG") %>% rename(year = YEAR)
 
 #CPI-U-RS less food and energy (core)
+
 cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
   # tranform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
@@ -73,6 +75,7 @@ cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
   mutate(year = str_sub(month_date, start = 1, end = 4), 
          period = toupper(str_sub(month_date, start = 6))) %>% 
   # join numeric month for easier handling 
+
   left_join(month_xwalk, by = "period") %>% 
   # convert back to data frame
   as.data.frame() %>% 
