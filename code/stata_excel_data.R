@@ -245,8 +245,8 @@ month_xwalk_alt <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12),
 # combine all alt indices
 wb_df_alt_indices <- api_output %>% 
   # select chained CPIU
-  filter(seriesID == "SUUR0000SA0") %>% 
-  select(-period, -periodName, -seriesID, chained_cpi_u = value) %>% 
+  select(year, month, chained_cpi_u = SUUR0000SA0) %>% 
+  filter(month != 13) %>% 
   group_by(year) %>% 
   mutate(chained_cpi_u = as.numeric(chained_cpi_u)) %>% 
   # summarize chained cpiu by year
