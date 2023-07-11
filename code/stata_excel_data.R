@@ -105,8 +105,6 @@ wb_df_monthly <- df_monthly %>%
   mutate_at(vars(matches("cpi")), as.numeric)
   
 
-write_csv(wb_df_monthly, here("output/cpi_monthly.csv"))
-
 ### WORKBOOK QUARTERLY DATA ####
 # interpolate quarterly data forward
 wb_df_quarterly_forward <- cpi_monthly %>% 

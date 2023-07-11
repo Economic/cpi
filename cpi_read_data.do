@@ -26,11 +26,6 @@ replace cpiurs_nsa = round(cpiurs_nsa, 0.1)
 replace cpiurs_core = round(cpiurs_core, 0.1)
 replace cpiurs_core_nsa = round(cpiurs_core_nsa, 0.1)
 
-
-*creat timeseries for lags and leads
-gen yearmonth = ym(year, month)
-tsset yearmonth
-
 *label all variables
 lab var cpi_u "All items in U.S. city average (seasonally adjusted)"
 lab var cpi_u_nsa "All items in U.S. city average (not seasonally adjusted)"
@@ -40,12 +35,12 @@ lab var cpiurs "CPI-U-RS, All items (seasonally adjusted)"
 lab var cpiurs_nsa "CPI-U-RS, All items (not seasonally adjusted)"
 lab var cpiurs_core "CPI-U-RS, All items less food and energy (seasonally adjusted)"
 lab var cpiurs_core_nsa "CPI-U-RS, All items less food and energy (not seasonally adjusted)"
-drop yearmonth
 saveold cpi_monthly.dta, version(13) replace
 
 *read in cpi data, annual data
 import delim ${output}cpi_annual.csv, clear
-tsset year
+
+tostring cpi*, force replace
 
 replace cpi_u_core = "." if cpi_u_core == "NA"
 replace cpiurs = "." if cpiurs == "NA"
