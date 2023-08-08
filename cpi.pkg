@@ -10,7 +10,7 @@ d
 d Distribution-Date: 20190518
 d
 
-F cpi_read_data.do
-F cpi.sthlp
-F cpi_monthly.dta
-F cpi_annual.dta
+f cpi_read_data.do
+f cpi.sthlp
+f cpi_monthly.dta
+f cpi_annual.dta
