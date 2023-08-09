@@ -24,7 +24,7 @@ month_xwalk <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12, NA),
 ## Get CPI-U-RS data Seasonally adjusted and not seasonally adjusted and get into long format.
 #note: BLS no longer provide SA data, seasonally adjust by hand
 cpiurs_mon <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1", startRow = 6) %>% 
-  # tranform to long format
+  # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_nsa") %>% 
   # filter out for monthly data
   filter(period != "AVG") %>% 
@@ -55,7 +55,7 @@ cpiurs_ann <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1"
 
 #CPI-U-RS less food and energy (core)
 cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
-  # tranform to long format
+  # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
   # filter out for monthly data
   filter(period != "AVG") %>% 
@@ -123,6 +123,8 @@ cpi_monthly <- api_output %>%
          cpi_u_medcare_nsa = CUUR0000SAM) %>% 
   arrange(year, month)
 
+# quarterly CPI
+#note: quarterly aggregation of CPI monthly
 cpi_quarterly <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date),
@@ -139,6 +141,8 @@ cpi_quarterly <- cpi_monthly %>%
             cpi_u_medcare = round(mean(cpi_u_medcare), 1),
             cpi_u_medcare_nsa = round(mean(cpi_u_medcare_nsa), 1))
 
+# Annual CPI
+#note: officially published BLS annual average + EPI estimate for current year
 cpi_annual <- api_output %>% 
   filter(month == 13) %>%
   rename(cpi_u = CUUR0000SA0,
@@ -146,6 +150,7 @@ cpi_annual <- api_output %>%
          cpi_u_medcare = CUUR0000SAM) %>% 
   select(-SUUR0000SA0) %>% 
   left_join(cpiurs_tot_ann, by = "year") %>% 
+  # assign annual average as CPIURS/CPIURS core values in latest year
   mutate(cpiurs = ifelse(year == current_year - 1, cpiurs_val, cpiurs),
          cpiurs_core = ifelse(year == current_year - 1, cpiurs_core_val, cpiurs_core)) %>% 
   select((c(year, starts_with("cpi"))))
