@@ -270,5 +270,15 @@ freezePane(wb, sheet = "Alt Indices", firstActiveRow = 4, firstActiveCol = 2)
 
 writeData(wb, wb_df_alt_indices, sheet = "Alt Indices", startRow = 4, startCol = 1, colNames = FALSE)
 
+### WORDPRESS FIGURE ####
+addWorksheet(wb, sheetName = "WP Figure")
+
+writeData(wb, x = wp_fig, sheet = "WP Figure", startRow = 1, startCol = 1)
+
+percent_fun <- function(x) {
+  addStyle(wb, sheet = "WP Figure", style = createStyle(numFmt = numFmt = '0.0%'), rows = 1:nrow(wp_fig)+1, cols = x)
+}
+
+walk(c(2:4), percent_fun)
 saveWorkbook(wb, here("output/price_indices.xlsx"), overwrite = TRUE)
   

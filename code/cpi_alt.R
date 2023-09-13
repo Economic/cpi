@@ -6,7 +6,8 @@ cpi_codes <- c("CUSR0000SA0",
                "CUUR0000SA0L1E",
                "CUSR0000SAM",
                "CUUR0000SAM",
-               "SUUR0000SA0")
+               "SUUR0000SA0",
+               "CES0500000003")
 
 #BLS API payloads
 api_output <- get_n_series_table(series_ids = cpi_codes, start_year = 1947, end_year = current_year, api_key = bls_key, tidy = TRUE, annualaverage = TRUE)
