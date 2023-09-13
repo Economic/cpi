@@ -36,14 +36,14 @@ df_monthly_backward <- cpi_monthly %>%
 # monthly forward projection
 #note: BLS only releases CPIURS/CPIURS core data once a year, 
 #      use prior year data to interpolate monthly data
-df_monthly_forward <- cpi_monthly %>% 
+df_monthly_forward_test <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date)) %>% 
   # calculate CPIU and CPIU core growth rate
   mutate(cpi_u_nsa_gr = cpi_u_nsa/lag(cpi_u_nsa, 1),
          cpi_u_core_nsa_gr = cpi_u_core_nsa/lag(cpi_u_core_nsa, 1)) %>% 
   # filter out data prior current year
-  filter(date >= paste0((current_year - 1),"-12-01")) %>% 
+  filter(date >= paste0((current_year - 2),"-12-01")) %>% 
   # use december of prior year data to interpolate CPIURS/CPIURS core forward
   mutate(cpiurs_nsa = accumulate(cpi_u_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_nsa[1]),
          cpiurs_core_nsa = accumulate(cpi_u_core_nsa_gr[2:n()], function(x, y) x*y, .init = cpiurs_core_nsa[1])) %>% 
@@ -265,4 +265,5 @@ wp_fig <- api_output %>%
   transmute(date = date,
             "Nominal wage growth" = (CES0500000003 / lag(CES0500000003, 12))-1,
             "Real wage growth" = (real_wage / lag(real_wage, 12))-1,
-            "Inflation" = cpi_u_yoy_nsa_percent)
+            "Inflation" = cpi_u_yoy_nsa_percent) %>% 
+  filter(date >= "2019-01-01")
