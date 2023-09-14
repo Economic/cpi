@@ -36,7 +36,7 @@ df_monthly_backward <- cpi_monthly %>%
 # monthly forward projection
 #note: BLS only releases CPIURS/CPIURS core data once a year, 
 #      use prior year data to interpolate monthly data
-df_monthly_forward_test <- cpi_monthly %>% 
+df_monthly_forward <- cpi_monthly %>% 
   mutate(date = as.POSIXct(paste(year, month, 1, sep = "-")),
          date = as.Date(date)) %>% 
   # calculate CPIU and CPIU core growth rate
