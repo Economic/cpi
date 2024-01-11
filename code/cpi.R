@@ -63,7 +63,7 @@ cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
   # create month date index
   mutate(month_date = yearmonth(paste(YEAR, period))) %>% 
   # convert table to tsibble for adjustment
-  as_tsibble(index = month_date)  %>% 
+  as_tsibble(index = month_date) %>% 
   # perform seasonal adjustment
   model(X_13ARIMA_SEATS(cpiurs_core_nsa)) %>% components() %>% 
   # extract data into logical variable names
