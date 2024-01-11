@@ -15,7 +15,7 @@ library(stringr)
 bls_key <- Sys.getenv("BLS_REG_KEY")
 
 # set year object
-current_year <- c(2023)
+current_year <- c(2024)
 
 
 # run script to pull in CPI

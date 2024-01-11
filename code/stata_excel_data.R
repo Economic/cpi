@@ -64,16 +64,10 @@ df_monthly <- cpi_monthly %>%
   rbind(., df_monthly_backward, df_monthly_forward) %>%
   arrange(date) 
 
-stata_cpi_monthly <- df_monthly %>% 
-  select(-date, -cpi_u_medcare, -cpi_u_medcare_nsa)  %>% 
-  mutate_at(vars(matches("cpi")), as.numeric) %>% 
-  write_csv(here("output/cpi_monthly.csv"))
 
 wb_df_monthly <- df_monthly %>% 
   select(-year, -month) %>% 
   arrange(date) %>% 
-  # write .csv used in stata .do file
-  write_csv(here("output/cpi_monthly.csv")) %>% 
   # calculate CPI-U and CPI-U core changes
   mutate(cpi_u_mom_sa_unit = cpi_u - lag(cpi_u, 1),
          cpi_u_mom_sa_percent = cpi_u_mom_sa_unit/lag(cpi_u, 1),
@@ -102,7 +96,9 @@ wb_df_monthly <- df_monthly %>%
          cpi_u_core_mom_sa_percent = round(cpi_u_core_mom_sa_percent, 3),
          cpi_u_core_yoy_nsa_unit = round(cpi_u_core_yoy_nsa_unit, 2),
          cpi_u_core_yoy_nsa_percent = round(cpi_u_core_yoy_nsa_percent, 3)) %>% 
-  mutate_at(vars(matches("cpi")), as.numeric)
+  mutate_at(vars(matches("cpi")), as.numeric) %>% 
+  # write .csv used in stata .do file
+  write_csv(here("output/cpi_monthly.csv"))
   
 
 ### WORKBOOK QUARTERLY DATA ####
@@ -192,11 +188,8 @@ wb_df_annual <- cpi_annual %>%
          cpiurs_core = case_when(
            year == (current_year - 1) & is.na(cpiurs_core) ~ (lag(cpiurs_core, 1) * (cpi_u_core) / lag(cpi_u_core, 1)),
            TRUE ~ cpiurs_core)) %>% 
-  select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare) 
-
-write.csv(wb_df_annual, here("output/cpi_annual.csv"))
-
-write_csv(wb_df_annual, here("output/cpi_annual.csv"))
+  select(year, cpi_u, cpi_u_core, cpiurs, cpiurs_core, cpi_u_medcare) %>% 
+  write_csv(here("output/cpi_annual.csv"))
 
 
 ### WORKBOOK ALT INDICES ####
