@@ -99,17 +99,6 @@ cpiurs_tot_ann <- cpiurs_ann %>%
   rename(cpiurs = cpiurs_nsa,
          cpiurs_core = cpiurs_core_nsa)
 
-# assign average cpiurs for past year as value
-#note: will only be used before BLS release annual CPI
-epi_cpiurs_val <- cpiurs_tot_mon %>% 
-  group_by(year) %>% summarize(mean(cpiurs_nsa, na.rm = TRUE)) %>% 
-  filter(year == current_year - 1) %>% pull()
-
-# assign average cpiurs core for past year as value
-epi_cpiurs_core_val <- cpiurs_tot_mon %>% 
-  group_by(year) %>% summarize(mean(cpiurs_core_nsa, na.rm = TRUE)) %>% 
-  filter(year == current_year - 1) %>% pull()
-
 #monthly cpi includes CPI U (SA, NSA) and CPI U CORE (SA, NSA)
 #  calculate months that don't yet exist (only update once per year) apply change from CPI
 cpi_monthly <- api_output %>% 
@@ -153,8 +142,8 @@ cpi_annual <- api_output %>%
   select(-SUUR0000SA0) %>% 
   left_join(cpiurs_tot_ann, by = "year") %>% 
   # assign annual average as CPIURS/CPIURS core values in latest year
-  mutate(cpiurs = case_when(is.na(cpiurs) & year == (current_year - 1) ~ epi_cpiurs_val,
+  mutate(cpiurs = case_when(is.na(cpiurs) & year == (current_year - 1) ~ (cpi_u/lag(cpi_u, 1) * lag(cpiurs, 1)),
                             TRUE ~ cpiurs),
-         cpiurs_core = case_when(is.na(cpiurs_core) & year == (current_year - 1) ~ epi_cpiurs_core_val,
+         cpiurs_core = case_when(is.na(cpiurs_core) & year == (current_year - 1) ~ (cpi_u_core/lag(cpi_u_core) * lag(cpiurs_core, 1)),
                                  TRUE ~ cpiurs_core)) %>% 
   select((c(year, starts_with("cpi"))))
