@@ -24,7 +24,7 @@ month_xwalk <- tibble(month = c(1,2,3,4,5,6,7,8,9,10,11,12, NA),
 
 ## Get CPI-U-RS data Seasonally adjusted and not seasonally adjusted and get into long format.
 #note: BLS no longer provide SA data, seasonally adjust by hand
-cpiurs_mon <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1", startRow = 6) %>% 
+cpiurs_mon <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "All items", startRow = 6) %>% 
   # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_nsa") %>% 
   # filter out for monthly data
@@ -48,14 +48,14 @@ cpiurs_mon <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1"
   select(year, period, month, cpiurs, cpiurs_nsa)
 
 # import CPIURS data
-cpiurs_ann <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "Table 1", startRow = 6) %>% 
+cpiurs_ann <- read.xlsx(here("data/r-cpi-u-rs-allitems.xlsx"), sheet = "All items", startRow = 6) %>% 
   # pivot to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_nsa") %>% 
   # extract annual data
   filter(period == "AVG") %>% rename(year = YEAR)
 
 #CPI-U-RS less food and energy (core)
-cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
+cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "All items less food and energy", startRow = 6) %>% 
   # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
   # filter out for monthly data
@@ -79,7 +79,7 @@ cpiurs_core_mon <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Ta
   select(year, period, month, cpiurs_core, cpiurs_core_nsa)
 
 # import CPIURS data
-cpiurs_core_ann <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "Table 1", startRow = 6) %>% 
+cpiurs_core_ann <- read.xlsx(here("data/r-cpi-u-rs-alllessfe.xlsx"), sheet = "All items less food and energy", startRow = 6) %>% 
   # transform to long format
   pivot_longer(cols = -YEAR, names_to = "period", values_to = "cpiurs_core_nsa") %>% 
   # extract annual data
