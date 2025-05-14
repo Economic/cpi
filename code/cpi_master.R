@@ -12,7 +12,7 @@ library(seasonal)
 library(stringr)
 library(realtalk)
 
-#BLS registration key needed for api version 2. register here: https://data.bls.gov/registrationEngine/
+#BLS registration key needed for wp figure. register here: https://data.bls.gov/registrationEngine/
 bls_key <- Sys.getenv("BLS_REG_KEY")
 
 # set year object
