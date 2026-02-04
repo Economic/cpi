@@ -16,7 +16,7 @@ library(realtalk)
 bls_key <- Sys.getenv("BLS_REG_KEY")
 
 # set year object
-current_year <- c(2025)
+current_year <- c(2026)
 
 # run script to pull in CPI
 #note: IF BLS HAS RELEASED CPI DATA FOR PAST YEAR, RUN THIS SCRIPT

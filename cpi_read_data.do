@@ -5,11 +5,19 @@ global output output/
 global data data/
 
 *read in cpi data, monthly data
-import delim ${output}cpi_monthly.csv, clear
+import delim ${output}cpi_monthly.csv, varnames(1) clear
+
 *make NA's missing and destring
-
 tostring c*, force replace
-
+replace cpi_u = "." if cpi_u == "NA"
+replace cpi_u_nsa = "." if cpi_u_nsa == "NA"
+replace c_cpi_u_extended = "." if c_cpi_u_extended == "NA"
+replace c_cpi_u_extended_nsa = "." if c_cpi_u_extended_nsa == "NA"
+replace cpi_u_yoy_nsa_unit = "." if cpi_u_yoy_nsa_unit == "NA"
+replace cpi_u_mom_sa_percent = "." if cpi_u_mom_sa_percent == "NA"
+replace cpi_u_yoy_nsa_percent = "." if cpi_u_yoy_nsa_percent == "NA"
+replace c_cpi_u_extended_yoy_nsa_unit = "." if c_cpi_u_extended_yoy_nsa_unit == "NA"
+replace c_cpi_u_extended_yoy_nsa_percent = "." if c_cpi_u_extended_yoy_nsa_percent == "NA"
 replace c_cpi_u_extended_mom_sa_unit = "." if c_cpi_u_extended_mom_sa_unit == "NA"
 replace c_cpi_u_extended_mom_sa_percent = "." if c_cpi_u_extended_mom_sa_percent == "NA"
 replace cpi_u_mom_sa_unit = "." if cpi_u_mom_sa_unit == "NA"
@@ -31,7 +39,7 @@ lab var c_cpi_u_extended_nsa "All items in U.S. city average (not seasonally adj
 saveold cpi_monthly.dta, version(13) replace
 
 *read in cpi data, annual data
-import delim ${output}cpi_annual.csv, clear
+import delim ${output}cpi_annual.csv, varnames(1) clear
 
 /*
 tostring c*, force replace
